@@ -26,7 +26,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 app = Flask(__name__)
-app.secret_key = 'careerpath_secret_2026'
+
+app.secret_key = os.environ.get("SECRET_KEY", "careerpath_secret_2026")
 
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, 'models')

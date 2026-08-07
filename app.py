@@ -31,22 +31,43 @@ app.secret_key = os.environ.get("SECRET_KEY", "careerpath_secret_2026")
 
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
+os.makedirs(MODELS_DIR, exist_ok=True)
 
 predictor = CareerPredictor()
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def load_history():
     path = os.path.join(MODELS_DIR, 'prediction_history.json')
-    if not os.path.exists(path): return []
-    with open(path) as f: return json.load(f)
+
+    if not os.path.exists(path):
+        return []
+
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data if isinstance(data, list) else []
+    except (json.JSONDecodeError, OSError):
+        return []
+
 
 def save_history(h):
-    with open(os.path.join(MODELS_DIR, 'prediction_history.json'), 'w') as f:
-        json.dump(h, f, indent=2)
+    os.makedirs(MODELS_DIR, exist_ok=True)
+    path = os.path.join(MODELS_DIR, 'prediction_history.json')
+
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(h, f, indent=2, ensure_ascii=False)
 
 def load_metrics():
-    with open(os.path.join(MODELS_DIR, 'model_metrics.json')) as f:
-        return json.load(f)
+    path = os.path.join(MODELS_DIR, 'model_metrics.json')
+
+    if not os.path.exists(path):
+        return {}
+
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
 
 def login_required(f):
     @wraps(f)
@@ -100,7 +121,7 @@ def api_stats():
         'total_predictions': total,
         'avg_confidence':    avg_conf,
         'unique_users':      len(set(h['user'] for h in history)) if history else 0,
-        'model_accuracy':    round(metrics['accuracy'] * 100, 1),
+        'model_accuracy':    round(metrics.get('accuracy', 0) * 100, 1),
         'career_distribution': career_counts,
         'trend_dates':  [t[0] for t in trend_sorted],
         'trend_counts': [t[1] for t in trend_sorted],
@@ -467,5 +488,3 @@ def download_report(prediction_id):
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
-
-    

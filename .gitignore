@@ -9,3 +9,4 @@ models/label_encoder_major.pkl
 models/skills_columns.pkl
 static/js/tailwind.js
 static/js/chart.min.js
+models/prediction_history.json

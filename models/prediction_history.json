@@ -1,0 +1,45 @@
+[
+  {
+    "id": 1,
+    "user": "Ayinla Bukola",
+    "major": "Artificial Intelligence",
+    "gpa": 3.2,
+    "skills": [
+      "Machine Learning",
+      "Deep Learning",
+      "Communication",
+      "Leadership",
+      "Teamwork",
+      "Critical Thinking",
+      "Problem Solving"
+    ],
+    "internships": 0,
+    "projects": 2,
+    "leadership": 3,
+    "project_desc": "",
+    "career": "Product Manager",
+    "confidence": 68.9,
+    "all_results": [
+      {
+        "career": "Product Manager",
+        "confidence": 68.9
+      },
+      {
+        "career": "Software Engineer",
+        "confidence": 11.4
+      },
+      {
+        "career": "Consultant",
+        "confidence": 7.7
+      }
+    ],
+    "keyword_signals": {
+      "has_ai_keywords": 1,
+      "has_web_keywords": 0,
+      "has_data_keywords": 0,
+      "has_security_kw": 0,
+      "has_mgmt_keywords": 1
+    },
+    "timestamp": "2026-07-07 04:57"
+  }
+]

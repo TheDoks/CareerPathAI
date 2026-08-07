@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pkl
+*.ipynb_checkpoints/
+.env
+models/career_predictor_model.pkl
+models/label_encoder_career.pkl
+models/label_encoder_major.pkl
+models/skills_columns.pkl
+static/js/tailwind.js
+static/js/chart.min.js

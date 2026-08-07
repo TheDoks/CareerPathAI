@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerPath AI | Intelligent Career Prediction</title>
+    <script src="/static/js/tailwind.js"></script>
+    <script src="/static/js/chart.min.js"></script>
+    <link href="/static/css/fontawesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        .glass-panel { background: rgba(30,41,59,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 30px rgba(0,0,0,0.1); }
+        .gradient-text { background: linear-gradient(135deg,#60a5fa 0%,#a78bfa 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-item.active { background: linear-gradient(90deg,rgba(59,130,246,0.2) 0%,transparent 100%); border-left: 3px solid #3b82f6; color: #60a5fa; }
+        .nav-item { border-left: 3px solid transparent; }
+        .slider-thumb::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:#3b82f6; cursor:pointer; box-shadow:0 0 10px rgba(59,130,246,0.5); }
+        .fade-in { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        .card-hover:hover { transform:translateY(-4px); transition:all .25s; border-color:rgba(59,130,246,0.3)!important; }
+        .skill-tag.selected { background:#3b82f6!important; color:white!important; border-color:#3b82f6!important; }
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:#0f172a; }
+        ::-webkit-scrollbar-thumb { background:#334155; border-radius:4px; }
+        input:-webkit-autofill { -webkit-box-shadow:0 0 0 30px #1e293b inset!important; -webkit-text-fill-color:#e2e8f0!important; }
+    </style>
+</head>
+<body class="h-screen overflow-hidden flex">
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════════════════ -->
+<aside class="w-64 glass-panel h-full flex flex-col border-r border-white/5 z-20 hidden md:flex flex-shrink-0">
+    <div class="p-6 flex items-center gap-3 border-b border-white/5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <i class="fas fa-brain text-white text-lg"></i>
+        </div>
+        <div>
+            <h1 class="font-bold text-lg tracking-tight">CareerPath<span class="text-blue-400">AI</span></h1>
+            <p class="text-xs text-slate-400">Fed. Poly Offa &bull; AI Dept</p>
+        </div>
+    </div>
+
+    <nav class="flex-1 py-6 px-3 space-y-1">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard"
+            class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+            <i class="fas fa-chart-pie w-5"></i> Dashboard
+        </button>
+        <button onclick="switchTab('predict')" id="nav-predict"
+            class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+            <i class="fas fa-wand-magic-sparkles w-5"></i> Predict Path
+        </button>
+        <button onclick="switchTab('explore')" id="nav-explore"
+            class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+            <i class="fas fa-compass w-5"></i> Explore Careers
+        </button>
+        <button onclick="switchTab('history')" id="nav-history"
+            class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+            <i class="fas fa-history w-5"></i> History
+        </button>
+    </nav>
+
+    <!-- Logout at bottom -->
+    <div class="p-4 border-t border-white/5">
+        <a href="/logout"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/5 transition-all">
+            <i class="fas fa-right-from-bracket w-5"></i> Logout
+        </a>
+    </div>
+</aside>
+
+<!-- ══ MAIN ══════════════════════════════════════════════════════════════════ -->
+<main class="flex-1 flex flex-col h-full relative">
+    <!-- Background glows -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px]"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="h-16 border-b border-white/5 flex items-center justify-between px-8 z-50 glass-panel flex-shrink-0 relative">
+        <div class="hidden md:block">
+            <h2 id="page-title" class="text-lg font-semibold text-white">Dashboard Overview</h2>
+        </div>
+        <div class="flex items-center gap-4">
+
+            <!-- ── Bell ── -->
+            <div class="relative" id="bellWrapper">
+                <button onclick="toggleDropdown('bellDropdown')"
+                    class="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition relative">
+                    <i class="fas fa-bell"></i>
+                    <span id="bellBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full text-white text-[9px] flex items-center justify-center font-bold"></span>
+                </button>
+                <!-- Bell Dropdown -->
+                <div id="bellDropdown"
+                    class="hidden absolute right-0 top-12 w-80 glass-panel rounded-2xl border border-white/10 shadow-2xl z-[100] overflow-hidden">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                        <span class="text-sm font-semibold text-white">Notifications</span>
+                        <button onclick="markAllRead()" class="text-xs text-blue-400 hover:text-blue-300">Mark all read</button>
+                    </div>
+                    <div id="bellList" class="max-h-72 overflow-y-auto">
+                        <div class="px-4 py-8 text-center text-slate-500 text-sm">
+                            <i class="fas fa-bell-slash text-2xl mb-2 block opacity-30"></i>
+                            No notifications yet
+                        </div>
+                    </div>
+                    <div class="px-4 py-2.5 border-t border-white/5 text-center">
+                        <button onclick="switchTab('history'); toggleDropdown('bellDropdown')"
+                            class="text-xs text-blue-400 hover:text-blue-300">View all in History →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Avatar ── -->
+            <div class="relative" id="avatarWrapper">
+                <button onclick="toggleDropdown('avatarDropdown')"
+                    class="flex items-center gap-3 pl-4 border-l border-white/10 hover:opacity-80 transition">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-medium text-white">Admin</p>
+                        <p class="text-xs text-slate-400">CareerPath AI</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm select-none">A</div>
+                    <i class="fas fa-chevron-down text-slate-500 text-xs hidden sm:block"></i>
+                </button>
+                <!-- Avatar Dropdown -->
+                <div id="avatarDropdown"
+                    class="hidden absolute right-0 top-12 w-60 glass-panel rounded-2xl border border-white/10 shadow-2xl z-[100] overflow-hidden">
+                    <!-- Profile card -->
+                    <div class="px-4 py-4 border-b border-white/5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">A</div>
+                            <div>
+                                <p class="text-sm font-semibold text-white">Admin</p>
+                                <p class="text-xs text-slate-400">admin@careerpath.ai</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 px-2 py-1.5 bg-blue-500/10 rounded-lg border border-blue-500/20 text-center">
+                            <span class="text-xs text-blue-400 font-medium">Fed. Poly Offa &bull; AI Dept</span>
+                        </div>
+                    </div>
+                    <!-- Menu items -->
+                    <div class="py-2">
+                        <button onclick="switchTab('dashboard'); toggleDropdown('avatarDropdown')"
+                            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition">
+                            <i class="fas fa-chart-pie w-4 text-slate-500"></i> Dashboard
+                        </button>
+                        <button onclick="switchTab('history'); toggleDropdown('avatarDropdown')"
+                            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-white/5 hover:text-white transition">
+                            <i class="fas fa-history w-4 text-slate-500"></i> Prediction History
+                        </button>
+                        <div class="my-1 border-t border-white/5"></div>
+                        <a href="/logout"
+                            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/5 hover:text-red-300 transition">
+                            <i class="fas fa-right-from-bracket w-4"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Scrollable Content -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-8 z-10">
+
+        <!-- ══ DASHBOARD ══════════════════════════════════════════════════ -->
+        <div id="view-dashboard" class="space-y-6 fade-in">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-panel p-6 rounded-2xl card-hover transition-all duration-300">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-slate-400 text-sm">Total Predictions</p>
+                            <h3 id="stat-total" class="text-3xl font-bold text-white mt-1">—</h3>
+                        </div>
+                        <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400"><i class="fas fa-chart-line"></i></div>
+                    </div>
+                    <div class="text-xs text-slate-500" id="stat-total-sub">No predictions yet</div>
+                </div>
+                <div class="glass-panel p-6 rounded-2xl card-hover transition-all duration-300">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-slate-400 text-sm">Avg. Confidence</p>
+                            <h3 id="stat-conf" class="text-3xl font-bold text-white mt-1">—</h3>
+                        </div>
+                        <div class="p-2 bg-purple-500/10 rounded-lg text-purple-400"><i class="fas fa-bullseye"></i></div>
+                    </div>
+                    <div class="text-xs text-slate-500" id="stat-conf-sub">No predictions yet</div>
+                </div>
+                <div class="glass-panel p-6 rounded-2xl card-hover transition-all duration-300">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-slate-400 text-sm">Unique Students</p>
+                            <h3 id="stat-users" class="text-3xl font-bold text-white mt-1">—</h3>
+                        </div>
+                        <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><i class="fas fa-users"></i></div>
+                    </div>
+                    <div class="text-xs text-slate-500" id="stat-users-sub">No predictions yet</div>
+                </div>
+                <div class="glass-panel p-6 rounded-2xl card-hover transition-all duration-300">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-slate-400 text-sm">Model Accuracy</p>
+                            <h3 id="stat-acc" class="text-3xl font-bold text-white mt-1">—</h3>
+                        </div>
+                        <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400"><i class="fas fa-brain"></i></div>
+                    </div>
+                    <div class="text-xs text-slate-500" id="stat-acc-sub">From training evaluation</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 glass-panel p-6 rounded-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-lg">Prediction Trends</h3>
+                    </div>
+                    <div class="relative w-full" style="height:256px;">
+                        <div class="absolute inset-0 flex items-center justify-center" id="trendsWrap">
+                            <div class="text-slate-600 text-sm text-center">
+                                <i class="fas fa-chart-line text-3xl mb-2 block opacity-30"></i>
+                                Make your first prediction to see trends
+                            </div>
+                        </div>
+                        <canvas id="trendsChart" class="hidden absolute inset-0 w-full h-full"></canvas>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="font-semibold text-lg mb-4">Top Career Paths</h3>
+                    <div class="relative w-full" style="height:256px;">
+                        <div class="absolute inset-0 flex items-center justify-center" id="distWrap">
+                            <div class="text-slate-600 text-sm text-center">
+                                <i class="fas fa-chart-pie text-3xl mb-2 block opacity-30"></i>
+                                No data yet
+                            </div>
+                        </div>
+                        <canvas id="distributionChart" class="hidden absolute inset-0 w-full h-full"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Predictions Table -->
+            <div class="glass-panel p-6 rounded-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-semibold text-lg">Recent Predictions</h3>
+                    <button onclick="switchTab('history')" class="text-sm text-blue-400 hover:text-blue-300">View All</button>
+                </div>
+                <div class="overflow-x-auto" id="recentTableWrap">
+                    <p class="text-slate-600 text-sm py-6 text-center">No predictions made yet. <button onclick="switchTab('predict')" class="text-blue-400 hover:underline">Make your first one →</button></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ PREDICT ═════════════════════════════════════════════════════ -->
+        <div id="view-predict" class="hidden space-y-6 fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="glass-panel p-8 rounded-2xl border-t-4 border-blue-500">
+                        <h2 class="text-2xl font-bold mb-2">Academic Profile Analysis</h2>
+                        <p class="text-slate-400 mb-6">Input academic records and skills to generate a personalised career prediction.</p>
+
+                        <div class="space-y-6">
+                            <!-- Name -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">Student Full Name</label>
+                                <div class="relative">
+                                    <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                                    <input id="studentName" type="text" placeholder="e.g. Enter your ful name"
+                                        class="w-full bg-slate-800/50 border border-slate-600 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 outline-none transition">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Current Major</label>
+                                    <select id="major" class="w-full border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none transition" onchange="showMajorNote(this.value)"
+                                        style="background-color:#1e293b;">
+                                        <optgroup label="─── Dataset Majors ───" style="background:#0f172a;color:#60a5fa;font-weight:600;">
+                                            <option value="Biology" style="background:#1e293b;color:#e2e8f0;">Biology</option>
+                                            <option value="Business" style="background:#1e293b;color:#e2e8f0;">Business</option>
+                                            <option value="Computer Science" selected style="background:#1e293b;color:#e2e8f0;">Computer Science</option>
+                                            <option value="Engineering" style="background:#1e293b;color:#e2e8f0;">Engineering</option>
+                                            <option value="Mathematics" style="background:#1e293b;color:#e2e8f0;">Mathematics</option>
+                                            <option value="Psychology" style="background:#1e293b;color:#e2e8f0;">Psychology</option>
+                                        </optgroup>
+                                        <optgroup label="─── Technology Majors ───" style="background:#0f172a;color:#a78bfa;font-weight:600;">
+                                            <option value="Artificial Intelligence" style="background:#1e293b;color:#e2e8f0;">Artificial Intelligence</option>
+                                            <option value="Software & Web Development" style="background:#1e293b;color:#e2e8f0;">Software & Web Development</option>
+                                            <option value="Networking & Cloud Computing" style="background:#1e293b;color:#e2e8f0;">Networking & Cloud Computing</option>
+                                            <option value="Cybersecurity" style="background:#1e293b;color:#e2e8f0;">Cybersecurity</option>
+                                        </optgroup>
+                                    </select>
+                                    <p id="majorNote" class="hidden text-xs mt-1.5 text-amber-400/80 flex items-center gap-1">
+                                        <i class="fas fa-circle-info"></i>
+                                        <span id="majorNoteText"></span>
+                                    </p>
+                                </div>
+                                <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">Current GPA (0.0 – 4.0)</label>
+                                <div class="flex items-center gap-3 mt-1">
+                                    <input type="range" id="gpaRange" min="0" max="4" step="0.1" value="3.5"
+                                        class="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider-thumb"
+                                        oninput="updateGpaDisplay()">
+                                    <span id="gpaValue" class="text-xl font-bold text-blue-400 w-16 text-right">3.5</span>
+                                </div>
+                                <input type="hidden" id="gpaScale" value="4.0">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-3">Key Skills (select all that apply)</label>
+                                <div class="flex flex-wrap gap-2" id="skillsContainer"></div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Internships</label>
+                                    <input type="number" id="internships" min="0" max="20" value="2"
+                                        class="w-full bg-slate-800/50 border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Projects</label>
+                                    <input type="number" id="projects" min="0" max="30" value="3"
+                                        class="w-full bg-slate-800/50 border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Leadership Roles</label>
+                                    <input type="number" id="leadership" min="0" max="10" value="1"
+                                        class="w-full bg-slate-800/50 border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Project Descriptions -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-1">
+                                    Project Descriptions <span class="text-slate-500 font-normal text-xs">(optional — briefly describe projects you've worked on)</span>
+                                </label>
+                                <textarea id="projectDesc" rows="4" placeholder="e.g. Built a student attendance system using QR codes and Next.js. Developed a loan default prediction model using Random Forest in Python. Created a portfolio website..."
+                                    class="w-full bg-slate-800/50 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 outline-none transition resize-none text-sm leading-relaxed"></textarea>
+                                <p class="text-xs text-slate-600 mt-1">This helps the AI understand the quality and relevance of your projects beyond just the count.</p>
+                            </div>
+
+                            <!-- Upload -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    Upload Result / Transcript
+                                    <span class="text-slate-500 font-normal text-xs ml-1">(PDF or image — auto-extracts GPA & skills)</span>
+                                </label>
+                                <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-600 rounded-xl cursor-pointer hover:border-blue-500 transition bg-slate-800/30" id="uploadLabel">
+                                    <div class="flex flex-col items-center justify-center" id="uploadContent">
+                                        <i class="fas fa-cloud-arrow-up text-slate-500 text-2xl mb-1"></i>
+                                        <p class="text-xs text-slate-500">PDF, PNG or JPG — click to upload</p>
+                                    </div>
+                                    <input type="file" id="resultFile" accept=".pdf,.png,.jpg,.jpeg" class="hidden" onchange="handleTranscriptUpload(this)">
+                                </label>
+                                <!-- Extraction feedback -->
+                                <div id="extractionResult" class="hidden mt-3 p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 text-xs space-y-1.5">
+                                    <div class="flex items-center gap-2 text-emerald-400 font-semibold">
+                                        <i class="fas fa-circle-check"></i> Transcript analysed — fields pre-filled below
+                                    </div>
+                                    <div id="extractionDetails" class="text-slate-400 leading-relaxed"></div>
+                                </div>
+                            </div>
+
+                            <button onclick="runPrediction()" id="predictBtn"
+                                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/25 transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2">
+                                <i class="fas fa-bolt"></i>
+                                <span id="predictBtnText">Generate Prediction</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result Panel -->
+                <div class="lg:col-span-1">
+                    <div id="predictionResult"
+                        class="glass-panel p-6 rounded-2xl h-full flex flex-col items-center justify-center text-center border border-dashed border-slate-600 min-h-80">
+                        <div class="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-4 animate-pulse">
+                            <i class="fas fa-robot text-3xl text-slate-600"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-300">Ready to Predict</h3>
+                        <p class="text-slate-500 text-sm mt-2 px-4">Fill out the profile details and click Generate to see the AI-powered career analysis.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ EXPLORE ══════════════════════════════════════════════════════ -->
+        <div id="view-explore" class="hidden space-y-6 fade-in">
+            <div class="flex justify-between items-center mb-2">
+                <div>
+                    <h2 class="text-2xl font-bold">Career Universe</h2>
+                    <p class="text-slate-400">Explore paths, salaries, and required skills.</p>
+                </div>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                    <input type="text" id="careerSearch" placeholder="Search careers..."
+                        class="bg-slate-800/50 border border-slate-600 rounded-full pl-10 pr-4 py-2 text-sm text-white focus:border-blue-500 outline-none w-64"
+                        oninput="filterCareers(this.value)">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="careerCards"></div>
+        </div>
+
+        <!-- ══ HISTORY ══════════════════════════════════════════════════════ -->
+        <div id="view-history" class="hidden space-y-6 fade-in">
+            <div class="glass-panel p-6 rounded-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">Prediction History</h2>
+                    <button onclick="clearHistory()" class="text-xs text-red-400 hover:text-red-300 border border-red-500/20 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition">
+                        <i class="fas fa-trash mr-1"></i> Clear All
+                    </button>
+                </div>
+                <div id="historyList">
+                    <p class="text-slate-600 text-sm py-8 text-center">No predictions yet. <button onclick="switchTab('predict')" class="text-blue-400 hover:underline">Make your first one →</button></p>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end scrollable -->
+</main>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────
+const SKILLS_LIST = [
+    // Technical
+    'Python','Java','JavaScript','SQL','R','C++','MATLAB','HTML/CSS',
+    // Data & AI
+    'Data Analysis','Machine Learning','Deep Learning','Statistics','Data Visualisation',
+    'Natural Language Processing','Computer Vision','Cloud Computing',
+    // Design & Product
+    'UI/UX Design','Figma','Graphic Design','Product Strategy',
+    // Soft skills
+    'Communication','Leadership','Public Speaking','Research',
+    'Project Management','Teamwork','Critical Thinking','Problem Solving',
+];
+
+const CAREERS_DATA = [
+    // ── Model-predicted careers (6) ──────────────────────────────────────────
+    { title:'ML Engineer',           category:'Technology',     salary:'₦8M – ₦18M',   growth:'+40%', color:'blue',    icon:'fa-brain',                   desc:'Design and implement ML models and systems.',           skills:['Python','Machine Learning','Data Analysis','Cloud Computing'],      predicted:true  },
+    { title:'Data Scientist',        category:'Technology',     salary:'₦7M – ₦16M',   growth:'+35%', color:'emerald', icon:'fa-chart-bar',                desc:'Analyse complex data to drive decisions.',              skills:['Python','Data Analysis','Machine Learning','Research'],             predicted:true  },
+    { title:'Product Manager',       category:'Business',       salary:'₦6M – ₦14M',   growth:'+25%', color:'purple',  icon:'fa-chess-knight',             desc:'Lead product strategy and execution.',                  skills:['Project Management','Leadership','Public Speaking','Research'],     predicted:true  },
+    { title:'UX Researcher',         category:'Design',         salary:'₦5M – ₦12M',   growth:'+30%', color:'amber',   icon:'fa-users',                    desc:'Study user behaviours and needs.',                      skills:['Research','UI/UX Design','Data Analysis','Public Speaking'],        predicted:true  },
+    { title:'Software Engineer',     category:'Technology',     salary:'₦6.5M – ₦15M', growth:'+22%', color:'indigo',  icon:'fa-layer-group',              desc:'Build robust client and server software.',              skills:['Java','Python','Cloud Computing','UI/UX Design'],                   predicted:true  },
+    { title:'Consultant',            category:'Business',       salary:'₦5M – ₦13M',   growth:'+20%', color:'cyan',    icon:'fa-briefcase',                desc:'Provide expert advice and strategic guidance.',         skills:['Communication','Research','Leadership','Project Management'],       predicted:true  },
+    // ── Additional explorable careers (10) ───────────────────────────────────
+    { title:'Cybersecurity Analyst', category:'Technology',     salary:'₦7M – ₦16M',   growth:'+45%', color:'red',     icon:'fa-shield-halved',            desc:'Protect systems and data from cyber threats.',          skills:['Cloud Computing','Critical Thinking','Research','Problem Solving'],  predicted:false },
+    { title:'Cloud Architect',       category:'Infrastructure', salary:'₦9M – ₦20M',   growth:'+38%', color:'sky',     icon:'fa-cloud',                    desc:'Design and oversee cloud infrastructure solutions.',   skills:['Cloud Computing','Python','Leadership','Problem Solving'],           predicted:false },
+    { title:'Data Analyst',          category:'Technology',     salary:'₦5M – ₦12M',   growth:'+28%', color:'teal',    icon:'fa-magnifying-glass',         desc:'Interpret data and generate actionable insights.',      skills:['Data Analysis','Statistics','Data Visualisation','Research'],       predicted:false },
+    { title:'DevOps Engineer',       category:'Technology',     salary:'₦7.5M – ₦17M', growth:'+35%', color:'orange',  icon:'fa-gears',                    desc:'Bridge software development and IT operations.',       skills:['Cloud Computing','Python','Problem Solving','Critical Thinking'],   predicted:false },
+    { title:'AI Research Scientist', category:'Research',       salary:'₦10M – ₦25M',  growth:'+50%', color:'violet',  icon:'fa-atom',                     desc:'Advance the frontiers of artificial intelligence.',    skills:['Machine Learning','Deep Learning','Research','Statistics'],         predicted:false },
+    { title:'UI/UX Designer',        category:'Design',         salary:'₦5M – ₦13M',   growth:'+27%', color:'pink',    icon:'fa-pen-ruler',                desc:'Create intuitive and beautiful digital experiences.',  skills:['UI/UX Design','Figma','Graphic Design','Communication'],            predicted:false },
+    { title:'Business Analyst',      category:'Business',       salary:'₦5.5M – ₦13M', growth:'+22%', color:'lime',    icon:'fa-chart-pie',                desc:'Bridge business needs and technical solutions.',       skills:['Data Analysis','Communication','Project Management','Research'],    predicted:false },
+    { title:'Network Engineer',      category:'Infrastructure', salary:'₦6M – ₦14M',   growth:'+18%', color:'slate',   icon:'fa-network-wired',            desc:'Design and maintain network infrastructure.',          skills:['Cloud Computing','Problem Solving','Critical Thinking','Research'],  predicted:false },
+    { title:'Full Stack Developer',  category:'Technology',     salary:'₦6.5M – ₦16M', growth:'+30%', color:'fuchsia', icon:'fa-code',                     desc:'Build both front-end and back-end web applications.',  skills:['JavaScript','Python','UI/UX Design','Problem Solving'],             predicted:false },
+    { title:'Technical Writer',      category:'Business',       salary:'₦4M – ₦9M',    growth:'+15%', color:'rose',    icon:'fa-file-pen',                 desc:'Create clear documentation for technical products.',   skills:['Communication','Research','Critical Thinking','Teamwork'],          predicted:false },
+];
+
+let trendsChart = null, distChart = null;
+
+const MAJOR_ALIAS = {
+    'Artificial Intelligence':      'Computer Science',
+    'Software & Web Development':   'Computer Science',
+    'Networking & Cloud Computing': 'Engineering',
+    'Cybersecurity':                'Computer Science',
+};
+
+function updateGpaRange() {
+    updateGpaDisplay();
+}
+
+function updateGpaDisplay() {
+    const val = parseFloat(document.getElementById('gpaRange').value);
+    document.getElementById('gpaValue').innerText = val.toFixed(1);
+}
+
+function showMajorNote(major) {
+    const note     = document.getElementById('majorNote');
+    const noteText = document.getElementById('majorNoteText');
+    const alias    = MAJOR_ALIAS[major];
+    if (alias) {
+        noteText.textContent = `Mapped to "${alias}" for prediction (closest match in training data).`;
+        note.classList.remove('hidden');
+    } else {
+        note.classList.add('hidden');
+    }
+}
+
+// ── Dropdown helpers ───────────────────────────────────────────────────────
+let _unreadCount = 0;
+
+function toggleDropdown(id) {
+    const target = document.getElementById(id);
+    const others = ['bellDropdown','avatarDropdown'].filter(x => x !== id);
+    others.forEach(o => document.getElementById(o)?.classList.add('hidden'));
+    target.classList.toggle('hidden');
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', e => {
+    ['bellWrapper','avatarWrapper'].forEach(wrapperId => {
+        const wrapper = document.getElementById(wrapperId);
+        if (wrapper && !wrapper.contains(e.target)) {
+            const dropdown = wrapper.querySelector('[id$="Dropdown"]');
+            dropdown?.classList.add('hidden');
+        }
+    });
+});
+
+function markAllRead() {
+    _unreadCount = 0;
+    document.getElementById('bellBadge').classList.add('hidden');
+    document.querySelectorAll('.notif-dot').forEach(d => d.remove());
+}
+
+function populateBell(history) {
+    const list   = document.getElementById('bellList');
+    const badge  = document.getElementById('bellBadge');
+    const recent = history.slice(0, 6);
+
+    if (recent.length === 0) {
+        list.innerHTML = `<div class="px-4 py-8 text-center text-slate-500 text-sm">
+            <i class="fas fa-bell-slash text-2xl mb-2 block opacity-30"></i>No notifications yet</div>`;
+        badge.classList.add('hidden');
+        return;
+    }
+
+    const ICONS = { 'Software Engineer':'fa-layer-group','Data Scientist':'fa-chart-bar',
+        'ML Engineer':'fa-brain','Product Manager':'fa-chess-knight',
+        'UX Researcher':'fa-users','Consultant':'fa-briefcase' };
+    const COLORS = { 'Software Engineer':'blue','Data Scientist':'emerald','ML Engineer':'purple',
+        'Product Manager':'amber','UX Researcher':'cyan','Consultant':'indigo' };
+
+    list.innerHTML = recent.map((r, i) => {
+        const c    = COLORS[r.career] || 'blue';
+        const icon = ICONS[r.career]  || 'fa-star';
+        const isNew = i < _unreadCount;
+        return `
+        <div class="flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition border-b border-white/5 last:border-0 ${isNew ? 'bg-blue-500/5' : ''}">
+            <div class="w-8 h-8 rounded-lg bg-${c}-500/15 flex items-center justify-center text-${c}-400 flex-shrink-0 mt-0.5">
+                <i class="fas ${icon} text-xs"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm text-white font-medium truncate">${r.user}</p>
+                <p class="text-xs text-slate-400 truncate">Predicted: <span class="text-${c}-400">${r.career}</span> &bull; ${r.confidence}%</p>
+                <p class="text-xs text-slate-600 mt-0.5">${r.timestamp}</p>
+            </div>
+            ${isNew ? '<span class="notif-dot w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5"></span>' : ''}
+        </div>`;
+    }).join('');
+
+    if (_unreadCount > 0) {
+        badge.textContent = _unreadCount > 9 ? '9+' : _unreadCount;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    initSkills();
+    initCareerCards();
+    loadDashboard();
+});
+
+function initSkills() {
+    const c = document.getElementById('skillsContainer');
+    SKILLS_LIST.forEach(s => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'skill-tag px-3 py-1.5 rounded-lg border border-slate-600 text-slate-300 text-sm hover:border-blue-500 hover:text-white transition-all';
+        b.innerText = s;
+        b.onclick = () => b.classList.toggle('selected');
+        c.appendChild(b);
+    });
+}
+
+function initCareerCards() {
+    const c = document.getElementById('careerCards');
+    CAREERS_DATA.forEach(career => {
+        const div = document.createElement('div');
+        div.className = `career-card glass-panel p-6 rounded-2xl card-hover transition-all duration-300 border-t-4 border-${career.color}-500 cursor-pointer`;
+        div.dataset.search = (career.title + career.category + career.skills.join(' ')).toLowerCase();
+        div.onclick = () => openCareerModal(career);
+        div.innerHTML = `
+            <div class="flex justify-between items-start mb-4">
+                <div class="w-12 h-12 rounded-xl bg-${career.color}-500/10 flex items-center justify-center text-${career.color}-400 text-xl">
+                    <i class="fas ${career.icon}"></i>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                    <span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-slate-400 border border-slate-700">${career.category}</span>
+                    ${career.predicted ? '<span class="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 text-[10px] border border-blue-500/25">✦ Model Career</span>' : ''}
+                </div>
+            </div>
+            <h3 class="text-xl font-bold mb-2">${career.title}</h3>
+            <p class="text-slate-400 text-sm mb-4">${career.desc}</p>
+            <div class="flex items-center gap-4 text-sm mb-4">
+                <span class="text-slate-300"><i class="fas fa-coins text-emerald-400 mr-1"></i>${career.salary}</span>
+                <span class="text-slate-300"><i class="fas fa-arrow-trend-up text-blue-400 mr-1"></i>${career.growth}</span>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                ${career.skills.map(s=>`<span class="px-2 py-1 rounded bg-slate-800 text-xs text-slate-400">${s}</span>`).join('')}
+            </div>
+            <div class="mt-4 pt-3 border-t border-white/5 flex justify-end">
+                <span class="text-xs text-blue-400 hover:text-blue-300">Explore & Predict →</span>
+            </div>`;
+        c.appendChild(div);
+    });
+}
+
+function openCareerModal(career) {
+    document.getElementById('careerModalTitle').textContent      = career.title;
+    document.getElementById('careerModalCategory').textContent   = career.category;
+    document.getElementById('careerModalDesc').textContent       = career.desc;
+    document.getElementById('careerModalSalary').textContent     = career.salary;
+    document.getElementById('careerModalGrowth').textContent     = career.growth;
+    document.getElementById('careerModalPredicted').className    = career.predicted
+        ? 'px-2 py-1 rounded-full bg-blue-500/15 text-blue-400 text-xs border border-blue-500/25'
+        : 'hidden';
+    // Skill tags
+    const sc = document.getElementById('careerModalSkills');
+    sc.innerHTML = career.skills.map(s =>
+        `<span class="px-2.5 py-1 rounded-lg bg-slate-700 text-slate-200 text-xs">${s}</span>`
+    ).join('');
+    // Show modal
+    document.getElementById('careerModal').classList.remove('hidden');
+    // Wire "Try Predicting" button
+    document.getElementById('careerModalPredict').onclick = () => {
+        document.getElementById('careerModal').classList.add('hidden');
+        switchTab('predict');
+        // Pre-select skills that match
+        document.querySelectorAll('.skill-tag').forEach(btn => {
+            if (career.skills.includes(btn.innerText)) btn.classList.add('selected');
+            else btn.classList.remove('selected');
+        });
+    };
+}
+
+function filterCareers(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.career-card').forEach(c => {
+        c.style.display = c.dataset.search.includes(q) ? '' : 'none';
+    });
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function switchTab(tabId) {
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('nav-' + tabId).classList.add('active');
+    document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+    const view = document.getElementById('view-' + tabId);
+    view.classList.remove('hidden');
+    view.classList.remove('fade-in');
+    void view.offsetWidth;
+    view.classList.add('fade-in');
+
+    const titles = { dashboard:'Dashboard Overview', predict:'Career Prediction', explore:'Explore Careers', history:'Prediction History' };
+    document.getElementById('page-title').innerText = titles[tabId];
+
+    if (tabId === 'dashboard') loadDashboard();
+    if (tabId === 'history')   loadHistory();
+}
+
+// ── Dashboard ──────────────────────────────────────────────────────────────
+async function loadDashboard() {
+    try {
+        const res = await fetch('/api/stats');
+        const d   = await res.json();
+
+        const hasData = d.total_predictions > 0;
+        document.getElementById('stat-total').innerText    = hasData ? d.total_predictions : '—';
+        document.getElementById('stat-users').innerText    = hasData ? d.unique_users : '—';
+        document.getElementById('stat-conf').innerText     = hasData ? d.avg_confidence + '%' : '—';
+        document.getElementById('stat-acc').innerText      = d.model_accuracy ? d.model_accuracy + '%' : '—';
+        document.getElementById('stat-total-sub').innerText = hasData ? `${d.total_predictions} prediction${d.total_predictions !== 1 ? 's' : ''} recorded` : 'No predictions yet';
+        document.getElementById('stat-conf-sub').innerText  = hasData ? 'Across all predictions' : 'No predictions yet';
+        document.getElementById('stat-users-sub').innerText = hasData ? `${d.unique_users} distinct student${d.unique_users !== 1 ? 's' : ''}` : 'No predictions yet';
+        document.getElementById('stat-acc-sub').innerText   = d.model_accuracy ? 'From training evaluation' : 'Run notebook to train';
+
+        renderTrends(d.trend_dates, d.trend_counts);
+        renderDist(d.career_distribution);
+        loadRecentTable();
+    } catch(e) { console.error(e); }
+}
+function renderTrends(dates, counts) {
+    const canvas = document.getElementById('trendsChart');
+    const wrap   = document.getElementById('trendsWrap');
+
+    if (!dates || dates.length === 0) {
+        canvas.classList.add('hidden');
+        wrap.classList.remove('hidden');
+        return;
+    }
+    wrap.classList.add('hidden');
+    canvas.classList.remove('hidden');
+
+    if (trendsChart) trendsChart.destroy();
+    // Reset any Chart.js inline styles so our CSS container controls height
+    canvas.style.removeProperty('height');
+    trendsChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Predictions',
+                data: counts,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59,130,246,0.1)',
+                tension: 0.4, fill: true,
+                pointBackgroundColor: '#3b82f6',
+                pointBorderColor: '#fff',
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { color:'#94a3b8' } } },
+            scales: {
+                x: { grid:{ color:'rgba(255,255,255,0.05)' }, ticks:{ color:'#94a3b8' } },
+                y: { grid:{ color:'rgba(255,255,255,0.05)' }, ticks:{ color:'#94a3b8', stepSize:1 }, beginAtZero:true }
+            }
+        }
+    });
+}
+
+function renderDist(dist) {
+    const canvas = document.getElementById('distributionChart');
+    const wrap   = document.getElementById('distWrap');
+    const entries = Object.entries(dist || {});
+
+    if (entries.length === 0) {
+        canvas.classList.add('hidden');
+        wrap.classList.remove('hidden');
+        return;
+    }
+    wrap.classList.add('hidden');
+    canvas.classList.remove('hidden');
+
+    if (distChart) distChart.destroy();
+    canvas.style.removeProperty('height');
+    distChart = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: entries.map(e=>e[0]),
+            datasets: [{ data: entries.map(e=>e[1]), backgroundColor:['#3b82f6','#a78bfa','#f59e0b','#10b981','#ec4899','#64748b'], borderWidth:0, hoverOffset:4 }]
+        },
+        options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{ position:'bottom', labels:{ color:'#94a3b8', padding:16, usePointStyle:true } } },
+            cutout:'70%'
+        }
+    });
+}
+
+async function loadRecentTable() {
+    const wrap = document.getElementById('recentTableWrap');
+    try {
+        const res = await fetch('/api/history');
+        const history = await res.json();
+        populateBell(history);   // always refresh bell
+        if (!history || history.length === 0) {
+            wrap.innerHTML = `<p class="text-slate-600 text-sm py-6 text-center">No predictions yet. <button onclick="switchTab('predict')" class="text-blue-400 hover:underline">Make your first one →</button></p>`;
+            return;
+        }
+        const recent = history.slice(0, 8);
+        const BADGE_COLORS = { 'Software Engineer':'blue','Data Scientist':'emerald','ML Engineer':'purple','Product Manager':'amber','UX Researcher':'cyan','Consultant':'indigo' };
+
+        wrap.innerHTML = `
+        <table class="w-full text-sm text-left">
+            <thead class="text-xs text-slate-400 uppercase border-b border-slate-700">
+                <tr>
+                    <th class="py-3 px-4">Student</th>
+                    <th class="py-3 px-4">Major</th>
+                    <th class="py-3 px-4">Predicted Path</th>
+                    <th class="py-3 px-4">Confidence</th>
+                    <th class="py-3 px-4">Date</th>
+                    <th class="py-3 px-4">Status</th>
+                </tr>
+            </thead>
+            <tbody class="text-slate-300">
+                ${recent.map(r => {
+                    const bc = BADGE_COLORS[r.career] || 'slate';
+                    const conf = r.confidence;
+                    const barColor = conf >= 90 ? 'emerald' : conf >= 75 ? 'blue' : 'amber';
+                    const initials = r.user.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+                    return `
+                    <tr class="border-b border-slate-700/50 hover:bg-white/5 transition">
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">${initials}</div>
+                                <span>${r.user}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 text-slate-400">${r.major}</td>
+                        <td class="py-3 px-4"><span class="px-2 py-1 rounded-full bg-${bc}-500/10 text-${bc}-400 text-xs border border-${bc}-500/20">${r.career}</span></td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-16 bg-slate-700 rounded-full h-1.5"><div class="bg-${barColor}-500 h-1.5 rounded-full" style="width:${conf}%"></div></div>
+                                <span class="text-xs">${conf}%</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 text-slate-500 text-xs">${r.timestamp}</td>
+                        <td class="py-3 px-4"><span class="text-emerald-400"><i class="fas fa-check-circle mr-1"></i>Completed</span></td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>`;
+    } catch(e) { console.error(e); }
+}
+
+// ── Predict ────────────────────────────────────────────────────────────────
+async function handleTranscriptUpload(input) {
+    const content = document.getElementById('uploadContent');
+    const resultDiv = document.getElementById('extractionResult');
+    const detailsDiv = document.getElementById('extractionDetails');
+
+    if (!input.files[0]) return;
+    const file = input.files[0];
+
+    content.innerHTML = `<i class="fas fa-circle-notch fa-spin text-blue-400 text-xl mb-1"></i>
+        <p class="text-xs text-blue-400">Analysing transcript...</p>`;
+    resultDiv.classList.add('hidden');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const res = await fetch('/api/extract-transcript', { method:'POST', body: formData });
+        const data = await res.json();
+
+        content.innerHTML = `<i class="fas fa-check-circle text-emerald-400 text-xl mb-1"></i>
+            <p class="text-xs text-emerald-400">${file.name}</p>`;
+
+        if (data.success) {
+            let details = [];
+
+            // Auto-fill GPA if found — extraction already returns 4.0 value
+            if (data.gpa) {
+                const rangeEl = document.getElementById('gpaRange');
+                rangeEl.value = Math.min(data.gpa, 4.0).toFixed(2);
+                updateGpaDisplay();
+                details.push(`📊 GPA detected: <strong>${data.gpa}</strong> — set directly in slider`);
+            }
+
+            // Auto-select detected skills
+            if (data.detected_skills && data.detected_skills.length > 0) {
+                document.querySelectorAll('.skill-tag').forEach(btn => {
+                    if (data.detected_skills.includes(btn.innerText)) btn.classList.add('selected');
+                });
+                details.push(`🎯 Skills detected: <strong>${data.detected_skills.join(', ')}</strong>`);
+            }
+
+            // Show keyword signals
+            const kw = data.keyword_signals || {};
+            const kwActive = Object.entries(kw).filter(([k,v])=>v).map(([k])=>
+                k.replace('has_','').replace('_keywords','').replace('_kw','').replace('_',' ')
+            );
+            if (kwActive.length > 0) {
+                details.push(`🔍 Domain signals: <strong>${kwActive.join(', ')}</strong>`);
+            }
+
+            if (details.length === 0) {
+                details.push('No GPA or skills could be auto-detected from this file. You can still submit manually.');
+            }
+
+            detailsDiv.innerHTML = details.join('<br>');
+            resultDiv.classList.remove('hidden');
+        }
+    } catch(e) {
+        content.innerHTML = `<i class="fas fa-cloud-arrow-up text-slate-500 text-2xl mb-1"></i>
+            <p class="text-xs text-amber-400">${file.name} (saved — extraction unavailable)</p>`;
+    }
+}
+
+async function runPrediction() {
+    const name = document.getElementById('studentName').value.trim();
+    if (!name) { alert('Please enter the student name.'); return; }
+
+    const btn     = document.getElementById('predictBtn');
+    const btnText = document.getElementById('predictBtnText');
+    const skills  = Array.from(document.querySelectorAll('.skill-tag.selected')).map(b => b.innerText);
+
+    btn.disabled = true;
+    btn.querySelector('i').className = 'fas fa-circle-notch fa-spin';
+    btnText.textContent = 'Analysing…';
+
+    try {
+        const res = await fetch('/api/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name,
+                major:       document.getElementById('major').value,
+                gpa:           parseFloat(document.getElementById('gpaRange').value),
+                gpa_scale:     '4.0',
+                skills,
+                internships:   parseInt(document.getElementById('internships').value),
+                projects:      parseInt(document.getElementById('projects').value),
+                leadership:    parseInt(document.getElementById('leadership').value),
+                project_desc:  document.getElementById('projectDesc').value.trim(),
+            })
+        });
+        const data = await res.json();
+        if (data.error) { alert(data.error); return; }
+
+        renderResult(data, name);
+        _unreadCount++;
+        loadDashboard();
+    } catch(e) {
+        alert('Prediction failed. Check that the Flask server is running.');
+    } finally {
+        btn.disabled = false;
+        btn.querySelector('i').className = 'fas fa-bolt';
+        btnText.textContent = 'Generate Prediction';
+    }
+}
+
+function renderResult(data, name) {
+    const conf = data.confidence;
+    const ICONS = { 'Software Engineer':'fa-layer-group','Data Scientist':'fa-chart-bar','ML Engineer':'fa-brain','Product Manager':'fa-chess-knight','UX Researcher':'fa-users','Consultant':'fa-briefcase' };
+    const COLORS = { 'Software Engineer':'indigo','Data Scientist':'emerald','ML Engineer':'purple','Product Manager':'amber','UX Researcher':'cyan','Consultant':'blue' };
+    const color = COLORS[data.career] || 'blue';
+    const icon  = ICONS[data.career]  || 'fa-star';
+    const barColor = conf >= 90 ? 'emerald' : conf >= 75 ? 'blue' : 'amber';
+    const others = (data.all_results || []).slice(1);
+
+    const panel = document.getElementById('predictionResult');
+    panel.className = `glass-panel p-6 rounded-2xl border border-${color}-500/30 shadow-lg shadow-${color}-500/10 fade-in`;
+    panel.innerHTML = `
+        <div class="text-center mb-6">
+            <div class="inline-block p-4 rounded-full bg-${color}-500/15 mb-4">
+                <i class="fas ${icon} text-3xl text-${color}-400"></i>
+            </div>
+            <p class="text-slate-400 text-xs mb-1">Top recommendation for</p>
+            <p class="text-blue-300 font-semibold text-sm mb-2">${name}</p>
+            <h2 class="text-2xl font-bold text-${color}-400">${data.career}</h2>
+        </div>
+
+        <div class="mb-5">
+            <div class="flex justify-between text-sm mb-1">
+                <span class="text-slate-400">Confidence Score</span>
+                <span class="text-${barColor}-400 font-bold">${conf}%</span>
+            </div>
+            <div class="w-full bg-slate-700 rounded-full h-2">
+                <div class="bg-${barColor}-500 h-2 rounded-full transition-all duration-1000" style="width:0%" id="confBar"></div>
+            </div>
+        </div>
+
+        ${others.length ? `
+        <div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
+            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Alternative Paths</h4>
+            ${others.map(r => `
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-slate-300 text-sm">${r.career}</span>
+                <span class="text-purple-400 text-xs font-bold">${r.confidence}%</span>
+            </div>`).join('')}
+        </div>` : ''}`;
+
+    setTimeout(() => {
+        const bar = document.getElementById('confBar');
+        if (bar) bar.style.width = conf + '%';
+    }, 100);
+}
+
+// ── History ────────────────────────────────────────────────────────────────
+async function loadHistory() {
+    const list = document.getElementById('historyList');
+    try {
+        const res = await fetch('/api/history');
+        const history = await res.json();
+        if (!history || history.length === 0) {
+            list.innerHTML = `<p class="text-slate-600 text-sm py-8 text-center">No predictions yet.</p>`;
+            return;
+        }
+        const ICONS_MAP = { 'Software Engineer':'fa-layer-group','Data Scientist':'fa-chart-bar','ML Engineer':'fa-brain','Product Manager':'fa-chess-knight','UX Researcher':'fa-users','Consultant':'fa-briefcase' };
+        const COLOR_MAP = { 'Software Engineer':'blue','Data Scientist':'emerald','ML Engineer':'purple','Product Manager':'amber','UX Researcher':'cyan','Consultant':'indigo' };
+
+        list.innerHTML = `<div class="space-y-3">
+            ${history.map(r => {
+                const c = COLOR_MAP[r.career] || 'blue';
+                const i = ICONS_MAP[r.career]  || 'fa-star';
+                const conf = r.confidence;
+                const confColor = conf >= 90 ? 'emerald' : conf >= 75 ? 'blue' : 'amber';
+                return `
+                <div class="flex items-center justify-between p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:border-slate-600 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-${c}-500/15 flex items-center justify-center text-${c}-400">
+                            <i class="fas ${i}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-white">${r.career}</h4>
+                            <p class="text-xs text-slate-400">${r.user} &bull; ${r.major}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-${confColor}-400 font-bold">${conf}% Match</div>
+                        <div class="text-xs text-slate-500">${r.timestamp}</div>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>`;
+    } catch(e) { console.error(e); }
+}
+
+async function loadHistory() {
+    const list = document.getElementById('historyList');
+    try {
+        const res = await fetch('/api/history');
+        const history = await res.json();
+        if (!history || history.length === 0) {
+            list.innerHTML = `<p class="text-slate-600 text-sm py-8 text-center">No predictions yet.</p>`;
+            return;
+        }
+        const ICONS_MAP = { 'Software Engineer':'fa-layer-group','Data Scientist':'fa-chart-bar','ML Engineer':'fa-brain','Product Manager':'fa-chess-knight','UX Researcher':'fa-users','Consultant':'fa-briefcase' };
+        const COLOR_MAP = { 'Software Engineer':'blue','Data Scientist':'emerald','ML Engineer':'purple','Product Manager':'amber','UX Researcher':'cyan','Consultant':'indigo' };
+
+        list.innerHTML = `<div class="space-y-3">
+            ${history.map(r => {
+                const c = COLOR_MAP[r.career] || 'blue';
+                const i = ICONS_MAP[r.career]  || 'fa-star';
+                const conf = r.confidence;
+                const confColor = conf >= 80 ? 'emerald' : conf >= 65 ? 'blue' : 'amber';
+                return `
+                <div onclick='openHistoryModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'
+                    class="flex items-center justify-between p-4 bg-slate-800/30 rounded-xl border border-slate-700/50 hover:border-${c}-500/40 hover:bg-slate-800/60 transition cursor-pointer group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-${c}-500/15 flex items-center justify-center text-${c}-400 group-hover:bg-${c}-500/25 transition">
+                            <i class="fas ${i}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-white">${r.career}</h4>
+                            <p class="text-xs text-slate-400">${r.user} &bull; ${r.major} &bull; GPA ${r.gpa || '—'}/4.0</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <div class="text-${confColor}-400 font-bold">${conf}% Match</div>
+                            <div class="text-xs text-slate-500">${r.timestamp}</div>
+                        </div>
+                        <i class="fas fa-chevron-right text-slate-600 group-hover:text-slate-400 text-xs transition"></i>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>`;
+    } catch(e) { console.error(e); }
+}
+
+function openHistoryModal(entry) {
+    const ICONS_MAP = { 'Software Engineer':'fa-layer-group','Data Scientist':'fa-chart-bar','ML Engineer':'fa-brain','Product Manager':'fa-chess-knight','UX Researcher':'fa-users','Consultant':'fa-briefcase' };
+    const COLOR_MAP = { 'Software Engineer':'blue','Data Scientist':'emerald','ML Engineer':'purple','Product Manager':'amber','UX Researcher':'cyan','Consultant':'indigo' };
+    const c = COLOR_MAP[entry.career] || 'blue';
+    const i = ICONS_MAP[entry.career]  || 'fa-star';
+    const conf = entry.confidence;
+    const confColor = conf >= 80 ? 'emerald' : conf >= 65 ? 'blue' : 'amber';
+    const others = (entry.all_results || []).slice(1);
+    const kw = entry.keyword_signals || {};
+    const KW_LABELS = {
+        has_ai_keywords:'AI / Machine Learning', has_web_keywords:'Web Development',
+        has_data_keywords:'Data / Analytics', has_security_kw:'Security / Networking',
+        has_mgmt_keywords:'Management / Leadership'
+    };
+    const skills = entry.skills || [];
+    const gpa4 = entry.gpa || '—';
+
+    document.getElementById('historyModal').classList.remove('hidden');
+    document.getElementById('modalBody').innerHTML = `
+    <div class="space-y-5">
+        <!-- Header -->
+        <div class="flex items-center gap-4 pb-4 border-b border-slate-700/50">
+            <div class="w-14 h-14 rounded-xl bg-${c}-500/15 flex items-center justify-center text-${c}-400 text-2xl flex-shrink-0">
+                <i class="fas ${i}"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-xl font-bold text-white">${entry.career}</h3>
+                <p class="text-sm text-slate-400">${entry.user} &bull; ${entry.major}</p>
+                <p class="text-xs text-slate-500">${entry.timestamp}</p>
+            </div>
+            <div class="text-right">
+                <div class="text-2xl font-bold text-${confColor}-400">${conf}%</div>
+                <div class="text-xs text-slate-500">Confidence</div>
+            </div>
+        </div>
+
+        <!-- Profile grid -->
+        <div class="grid grid-cols-2 gap-3">
+            ${[
+                ['GPA (4.0 Scale)', gpa4],
+                ['Internships', entry.internships ?? '—'],
+                ['Projects', entry.projects ?? '—'],
+                ['Leadership', entry.leadership ?? '—'],
+            ].map(([k,v]) => `
+            <div class="bg-slate-800/40 rounded-lg px-4 py-3">
+                <div class="text-xs text-slate-500 mb-0.5">${k}</div>
+                <div class="text-sm font-medium text-white">${v}</div>
+            </div>`).join('')}
+        </div>
+
+        <!-- Alternative paths -->
+        ${others.length ? `
+        <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Alternative Paths</p>
+            <div class="space-y-2">
+                ${others.map(r => `
+                <div class="flex justify-between items-center px-4 py-2.5 bg-slate-800/30 rounded-lg">
+                    <span class="text-sm text-slate-300">${r.career}</span>
+                    <span class="text-sm font-bold text-purple-400">${r.confidence}%</span>
+                </div>`).join('')}
+            </div>
+        </div>` : ''}
+
+        <!-- Skills -->
+        ${skills.length ? `
+        <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Skills Assessed</p>
+            <div class="flex flex-wrap gap-2">
+                ${skills.map(s => `<span class="px-2.5 py-1 bg-blue-500/10 text-blue-300 border border-blue-500/20 rounded-lg text-xs">${s}</span>`).join('')}
+            </div>
+        </div>` : ''}
+
+        <!-- Keyword signals -->
+        ${Object.keys(kw).length ? `
+        <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Project Keyword Signals</p>
+            <div class="grid grid-cols-1 gap-1.5">
+                ${Object.entries(kw).map(([k,v]) => `
+                <div class="flex items-center justify-between px-3 py-2 bg-slate-800/30 rounded-lg">
+                    <span class="text-xs text-slate-300">${KW_LABELS[k] || k}</span>
+                    <span class="text-xs font-medium ${v ? 'text-emerald-400' : 'text-slate-600'}">${v ? '✓ Detected' : '✗ Not detected'}</span>
+                </div>`).join('')}
+            </div>
+        </div>` : ''}
+
+        <!-- Project description -->
+        ${entry.project_desc ? `
+        <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Project Description</p>
+            <div class="bg-slate-800/30 rounded-lg px-4 py-3 border-l-2 border-blue-500 text-sm text-slate-300 leading-relaxed">${entry.project_desc}</div>
+        </div>` : ''}
+
+        <!-- Download -->
+        <div class="pt-2">
+            <a href="/api/report/${entry.id}" target="_blank"
+                class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-500/20 transition-all">
+                <i class="fas fa-file-pdf"></i> Download PDF Report
+            </a>
+        </div>
+    </div>`;
+}
+
+async function clearHistory() {
+    if (!confirm('Clear all prediction history?')) return;
+    await fetch('/api/history/clear', { method:'POST' });
+    loadHistory();
+    loadDashboard();
+}
+</script>
+
+<!-- Career Detail Modal -->
+<div id="careerModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="document.getElementById('careerModal').classList.add('hidden')"></div>
+    <div class="relative w-full max-w-md glass-panel rounded-2xl border border-white/10 shadow-2xl z-10">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-white/5">
+            <div>
+                <h3 id="careerModalTitle" class="font-bold text-white text-xl"></h3>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="careerModalCategory" class="text-xs text-slate-400"></span>
+                    <span id="careerModalPredicted" class="hidden"></span>
+                </div>
+            </div>
+            <button onclick="document.getElementById('careerModal').classList.add('hidden')"
+                class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <p id="careerModalDesc" class="text-slate-300 text-sm leading-relaxed"></p>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-slate-800/40 rounded-xl px-4 py-3">
+                    <div class="text-xs text-slate-500 mb-1">Salary Range</div>
+                    <div id="careerModalSalary" class="text-emerald-400 font-semibold text-sm"></div>
+                </div>
+                <div class="bg-slate-800/40 rounded-xl px-4 py-3">
+                    <div class="text-xs text-slate-500 mb-1">Job Growth</div>
+                    <div id="careerModalGrowth" class="text-blue-400 font-semibold text-sm"></div>
+                </div>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold mb-2">Key Skills Required</p>
+                <div id="careerModalSkills" class="flex flex-wrap gap-2"></div>
+            </div>
+            <button id="careerModalPredict"
+                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all">
+                <i class="fas fa-wand-magic-sparkles"></i> Try Predicting with These Skills
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- History Detail Modal -->
+<div id="historyModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="document.getElementById('historyModal').classList.add('hidden')"></div>
+    <div class="relative w-full max-w-lg glass-panel rounded-2xl border border-white/10 shadow-2xl max-h-[90vh] flex flex-col z-10">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-white/5 flex-shrink-0">
+            <h3 class="font-semibold text-white text-lg">Prediction Details</h3>
+            <button onclick="document.getElementById('historyModal').classList.add('hidden')"
+                class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <div id="modalBody" class="overflow-y-auto px-6 py-4 flex-1"></div>
+    </div>
+</div>
+</body>
+</html>

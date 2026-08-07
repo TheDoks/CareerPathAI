@@ -1,0 +1,191 @@
+{
+  "accuracy": 0.77,
+  "precision": 0.7466053068562521,
+  "recall": 0.77,
+  "f1_score": 0.7568622059412156,
+  "cv_mean": 0.7468,
+  "cv_std": 0.016666133324799742,
+  "cv_scores": [
+    0.714,
+    0.758,
+    0.754,
+    0.758,
+    0.75
+  ],
+  "total_samples": 2500,
+  "training_samples": 2000,
+  "test_samples": 500,
+  "classes": [
+    "Consultant",
+    "Data Scientist",
+    "ML Engineer",
+    "Product Manager",
+    "Software Engineer",
+    "UX Researcher"
+  ],
+  "per_class": [
+    {
+      "career": "Consultant",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 14
+    },
+    {
+      "career": "Data Scientist",
+      "precision": 0.6790123456790124,
+      "recall": 0.6470588235294118,
+      "f1": 0.6626506024096386,
+      "support": 85
+    },
+    {
+      "career": "ML Engineer",
+      "precision": 0.3783783783783784,
+      "recall": 0.30434782608695654,
+      "f1": 0.3373493975903614,
+      "support": 46
+    },
+    {
+      "career": "Product Manager",
+      "precision": 0.74,
+      "recall": 0.7872340425531915,
+      "f1": 0.7628865979381443,
+      "support": 47
+    },
+    {
+      "career": "Software Engineer",
+      "precision": 0.861003861003861,
+      "recall": 0.9409282700421941,
+      "f1": 0.8991935483870968,
+      "support": 237
+    },
+    {
+      "career": "UX Researcher",
+      "precision": 0.835820895522388,
+      "recall": 0.7887323943661971,
+      "f1": 0.8115942028985508,
+      "support": 71
+    }
+  ],
+  "confusion_matrix": [
+    [
+      0,
+      1,
+      2,
+      2,
+      7,
+      2
+    ],
+    [
+      2,
+      55,
+      16,
+      2,
+      9,
+      1
+    ],
+    [
+      2,
+      21,
+      14,
+      2,
+      4,
+      3
+    ],
+    [
+      0,
+      2,
+      0,
+      37,
+      7,
+      1
+    ],
+    [
+      1,
+      2,
+      4,
+      3,
+      223,
+      4
+    ],
+    [
+      1,
+      0,
+      1,
+      4,
+      9,
+      56
+    ]
+  ],
+  "feature_importance": [
+    {
+      "feature": "gpa",
+      "importance": 0.12098764960050289
+    },
+    {
+      "feature": "Python",
+      "importance": 0.09802622151158365
+    },
+    {
+      "feature": "major_encoded",
+      "importance": 0.07355535912438806
+    },
+    {
+      "feature": "Java",
+      "importance": 0.07336978366026908
+    },
+    {
+      "feature": "projects",
+      "importance": 0.07178277245333163
+    },
+    {
+      "feature": "projects_norm",
+      "importance": 0.07139831036844128
+    },
+    {
+      "feature": "Data Analysis",
+      "importance": 0.06522990595537512
+    },
+    {
+      "feature": "Communication",
+      "importance": 0.05878354956838263
+    },
+    {
+      "feature": "leadership",
+      "importance": 0.05790931379951067
+    },
+    {
+      "feature": "Leadership",
+      "importance": 0.05255428998842063
+    },
+    {
+      "feature": "internships_norm",
+      "importance": 0.04959026307741821
+    },
+    {
+      "feature": "internships",
+      "importance": 0.04940042383063608
+    },
+    {
+      "feature": "has_web_keywords",
+      "importance": 0.03206178470080928
+    },
+    {
+      "feature": "Statistics",
+      "importance": 0.03192088975999499
+    },
+    {
+      "feature": "Design",
+      "importance": 0.03145925964453196
+    }
+  ],
+  "new_features": [
+    "has_ai_keywords",
+    "has_web_keywords",
+    "has_data_keywords",
+    "has_security_kw",
+    "has_mgmt_keywords",
+    "internships_norm",
+    "projects_norm"
+  ]
+}
